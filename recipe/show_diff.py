@@ -73,11 +73,7 @@ if __name__ == "__main__":
         help='use cached repodata files, rather than downloading them')
     args = parser.parse_args()
 
-    if args.subdirs is None:
-        subdirs = SUBDIRS
-    else:
-        subdirs = args.subdirs
-
+    subdirs = SUBDIRS if args.subdirs is None else args.subdirs
     for subdir in subdirs:
         subdir_dir = os.path.join(CACHE_DIR, subdir)
         if not os.path.exists(subdir_dir):
