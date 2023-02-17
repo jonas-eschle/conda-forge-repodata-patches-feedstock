@@ -298,9 +298,7 @@ def _add_removals(instructions, subdir):
     data = r.json()
     currvals = list(REMOVALS.get(subdir, []))
     for pkgs_section_key in ["packages", "packages.conda"]:
-        for pkg_name in data.get(pkgs_section_key, []):
-            currvals.append(pkg_name)
-
+        currvals.extend(iter(data.get(pkgs_section_key, [])))
     instructions["remove"].extend(tuple(set(currvals)))
 
 
@@ -340,17 +338,12 @@ def has_dep(record, name):
 
 def get_python_abi(version, subdir, build=None):
     if build is not None:
-        m = re.match(r".*py\d\d", build)
-        if m:
+        if m := re.match(r".*py\d\d", build):
             version = f"{m.group()[-2]}.{m.group()[-1]}"
     if version.startswith("2.7"):
-        if subdir.startswith("linux"):
-            return "cp27mu"
-        return "cp27m"
+        return "cp27mu" if subdir.startswith("linux") else "cp27m"
     elif version.startswith("2.6"):
-        if subdir.startswith("linux"):
-            return "cp26mu"
-        return "cp26m"
+        return "cp26mu" if subdir.startswith("linux") else "cp26m"
     elif version.startswith("3.4"):
         return "cp34m"
     elif version.startswith("3.5"):
@@ -407,7 +400,7 @@ def add_python_abi(record, subdir):
                     python_abi = get_python_abi("2.7", subdir, build)
                 elif dep_split[1].startswith(">="):
                     m = cb_pin_regex.match(dep_split[1])
-                    if m == None:
+                    if m is None:
                         python_abi = get_python_abi("", subdir, build)
                     else:
                         lower = pad_list(m.group("lower").split("."), 2)[:2]
@@ -430,11 +423,10 @@ def add_python_abi(record, subdir):
 
 
 def _gen_new_index(repodata, subdir):
-    indexes = {}
-    for index_key in ['packages', 'packages.conda']:
-        indexes[index_key] = _gen_new_index_per_key(repodata, subdir, index_key)
-
-    return indexes
+    return {
+        index_key: _gen_new_index_per_key(repodata, subdir, index_key)
+        for index_key in ['packages', 'packages.conda']
+    }
 
 
 def _gen_new_index_per_key(repodata, subdir, index_key):

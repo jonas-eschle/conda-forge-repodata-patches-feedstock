@@ -88,14 +88,14 @@ def test_add_python_abi():
         record = copy.deepcopy(record_orig)
         add_python_abi(record, "linux-64")
         print(record, condition, tag)
-        if tag == None:
+        if tag is None:
             assert record["constrains"] == []
         else:
             assert record["constrains"] == [tag]
 
         record = copy.deepcopy(record_orig)
         add_python_abi(record, "osx-64")
-        if tag == None:
+        if tag is None:
             assert record["constrains"] == []
         elif tag.endswith(("cp27mu", "cp26mu")):
                 assert record["constrains"] == [tag[:-1]]
